@@ -6,31 +6,60 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
+/**
+ * this is a hand-written Typescript translation of the parts 
+ * of the Google Maps Js API.  It is incomplete but rather than
+ * completing it, it should be *automated*.
+ */
+
 export interface LatLngLiteral {
   lat: number;
   lng: number;
 }
 
-type ControlPosition = 'BOTTOM_CENTER' |
-  'BOTTOM_LEFT' |
-  'BOTTOM_RIGHT' |
-  'LEFT_BOTTOM' |
-  'LEFT_CENTER' |
-  'LEFT_TOP' |
-  'RIGHT_BOTTOM' |
-  'RIGHT_CENTER' |
-  'RIGHT_TOP' |
-  'TOP_CENTER' |
-  'TOP_LEFT' |
-  'TOP_RIGHT';
+/**
+ * This is a little nominal-typing trick.  It guarantees that the only
+ * way, short of deliberate casting, to get constants of this type
+ * (ControlPosition in this case) is by actually loading the library
+ * and consulting its dictionary.
+ */
+export type ControlPosition = number & { __brand: "ControlPosition" };
+
+interface ControlPositionValues {
+  BOTTOM_CENTER: ControlPosition;
+  BOTTOM_LEFT: ControlPosition;
+  BOTTOM_RIGHT: ControlPosition;
+  LEFT_BOTTOM: ControlPosition;
+  LEFT_CENTER: ControlPosition;
+  LEFT_TOP: ControlPosition;
+  RIGHT_BOTTOM: ControlPosition;
+  RIGHT_CENTER: ControlPosition;
+  RIGHT_TOP: ControlPosition;
+  TOP_CENTER: ControlPosition;
+  TOP_LEFT: ControlPosition;
+  TOP_RIGHT: ControlPosition;
+}
 
 export interface FullscreenControlOptions {
   position: ControlPosition;
 }
 
-type MapTypeControlStyle = 'DEFAULT' | 'DROPDOWN_MENU' | 'HORIZONTAL_BAR';
+export type MapTypeControlStyle = number & { __brand: "MapTypeControlStyle" };
 
-type MapTypeId  = 'HYBRID' | 'ROADMAP' | 'SATELLITE' | 'TERRAIN';
+interface MapTypeControlStyleValues {
+  DEFAULT: MapTypeControlStyle;
+  DROPDOWN_MENU: MapTypeControlStyle;
+  HORIZONTAL_BAR: MapTypeControlStyle;
+}
+
+export type MapTypeId = string & { __brand: "MapTypeId" };
+
+interface MapTypeIdValues  {
+  HYBRID: MapTypeId;
+  ROADMAP: MapTypeId;
+  SATELLITE: MapTypeId;
+  TERRAIN: MapTypeId;
+}
 
 export interface MapTypeStyle  {
   elementType: string;
@@ -52,7 +81,11 @@ export interface RotateControlOptions {
   position: ControlPosition;
 }
 
-type ScaleControlStyle = 'DEFAULT';
+export type ScaleControlStyle = number & { __brand: "ScaleControlStyle" };
+
+interface ScaleControlStyleValues {
+DEFAULT: ScaleControlStyle;
+};
 
 export interface ScaleControlOptions {
   style: ScaleControlStyle;
@@ -66,7 +99,6 @@ export interface MapRestriction {
   latLngBounds: LatLngLiteral;
   strictBounds: boolean;
 }
-
 
 
 export interface MapOptions {
@@ -141,9 +173,15 @@ export interface MarkerLabel {
   text:  string;
 }
 
-export interface Point {
-  x:  number;
-  y:  number;
+/**
+ * the Point class, like several others, is declared with a private
+ * constructor because no Typescript code should be constructing it.
+ * It should only be made by the constructors in the library.
+ */ 
+export class Point {
+  private constructor(
+    readonly x:  number,
+    readonly y:  number) { }
 }
 
 export interface MarkerShape  {
@@ -151,13 +189,20 @@ export interface MarkerShape  {
   type:  string;
 }
 
-type Animation = 'BOUNCE' | 'DROP';
+export type Animation = number & { __brand: "Animation" };
+interface AnimationValues {
+  BOUNCE: Animation;
+  DROP: Animation;
+}
 
-type SymbolPath = 'BACKWARD_CLOSED_ARROW' |
-  'BACKWARD_OPEN_ARROW' |
-  'CIRCLE' |
-  'FORWARD_CLOSED_ARROW' |
-  'FORWARD_OPEN_ARROW';
+export type SymbolPath = number & { __brand: "SymbolPath" };
+interface SymbolPathValues {
+  BACKWARD_CLOSED_ARROW: SymbolPath;
+  BACKWARD_OPEN_ARROW: SymbolPath
+  CIRCLE: SymbolPath
+  FORWARD_CLOSED_ARROW: SymbolPath
+  FORWARD_OPEN_ARROW: SymbolPath
+}
 
 export interface MarkerShape {
   anchor:  Point;
@@ -172,11 +217,13 @@ export interface MarkerShape {
   strokeWeight:  number;
 }
 
-export interface Size {
-  width:  number;
-  height:  number;
-  widthUnit?:  string;
-  heightUnit?:  string;
+export class Size {
+  private constructor(
+    width:  number,
+    height:  number,
+    widthUnit?:  string,
+    heightUnit?:  string,
+  ) { }
 }
 
 export interface GoogMarker {
@@ -204,11 +251,36 @@ export interface GoogMap {
   setZoom(zoom: number): void;
 }
 
-export interface MapApi {
+export interface GoogMapApi {
   Map: {
     new (nativeElement: any, options?: MapOptions): GoogMap
   };
   Marker: {
     new(options?: MarkerOptions): GoogMarker
   };
+  Size: {
+    new(
+      width:  number,
+      height:  number,
+      widthUnit?:  string,
+      heightUnit?:  string,
+    ): Size
+  };
+  Point: {
+    new(
+      x:  number,
+      y:  number): Point
+  };
+  LatLng: {
+    new(
+      lat:  number,
+      lng:  number,
+    ): LatLngLiteral;
+  };
+  ControlPosition: ControlPositionValues;
+  MapTypeControlStyle: MapTypeControlStyleValues;
+  MapTypeId: MapTypeIdValues;
+  ScaleControlStyle: ScaleControlStyleValues;
+  Animation: AnimationValues;
+  SymbolPath: SymbolPathValues;
 }

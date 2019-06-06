@@ -8,3 +8,5 @@
 
 export * from './map.module';
 export * from './map-credentials';
+export * from './api.interface';
+export * from './api.service';

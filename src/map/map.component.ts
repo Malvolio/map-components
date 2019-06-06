@@ -1,13 +1,11 @@
 import { Component, Input, ViewChild, ElementRef, OnDestroy, ContentChildren, QueryList  } from '@angular/core';
-import { Observable, ReplaySubject, combineLatest } from 'rxjs';
-import { publishReplay, refCount, map, switchMap, takeUntil, debounceTime } from 'rxjs/operators';
+import { Observable, ReplaySubject, combineLatest, merge } from 'rxjs';
+import { publishReplay, refCount, map, switchMap, takeUntil, debounceTime, scan } from 'rxjs/operators';
 
-import { MapApiService } from './map-api.service';
-import { GoogMap } from './map-api.interface';
-import { MapMarker } from './map-marker.component';
+import { MapApiService } from './api.service';
+import { GoogMap, MapOptions } from './api.interface';
+import { MapMarker } from './marker.component';
 
-const DEFAULT_CENTER = { lat: 0, lng: 0 };
-const DEFAULT_ZOOM = 4;
 
 @Component({
   selector: 'matMap',
@@ -18,11 +16,21 @@ const DEFAULT_ZOOM = 4;
 })
 export class MatMap implements OnDestroy {
   /**
+   * All map options
+   */
+  @Input() set options(options: MapOptions) {
+    if (options) {
+      this.optionsObs.next(options);
+    }
+  }
+
+  /**
    * The latitude for the center of this map, expressed as a number.
    */
   @Input() set lat(n: number) {
     this.latObs.next(n);
   }
+
 
   /**
    * The longitude for the center of this map, expressed as a number.
@@ -41,11 +49,6 @@ export class MatMap implements OnDestroy {
   }
   
   constructor(private readonly mapApiService: MapApiService) {
-    this.withMap(this.zoomObs,
-               (map, zoom) => {
-                 map.setZoom(zoom);
-               });
-
     this.withMap(this.mapMarkers, (map, mapMarkers) => {
       mapMarkers.forEach(marker => {
         marker.setMap(map);
@@ -53,25 +56,35 @@ export class MatMap implements OnDestroy {
     });
 
     const centerObs = combineLatest(this.latObs, this.lngObs).pipe(
-      debounceTime(10), // in case of any Angular weirdness
-      map(([lat, lng]) => ({lat, lng})),
+      map(([lat, lng]) => ({center: {lat, lng}} as MapOptions)),
     );
 
-    this.withMap(centerObs, (map, center) => {
-      map.setCenter(center);
+    const allOptionsObs = merge(
+      centerObs,
+      this.zoomObs,
+      this.optionsObs,
+    ).pipe(
+      scan((acc, opts) => ( {...acc, ...opts} as MapOptions ),
+           {} as MapOptions),
+      debounceTime(10), // in case of any Angular weirdness
+    );
+
+    this.withMap(allOptionsObs, (map, options) => {
+      map.setOptions(options);
     });
   }
 
   private readonly onDestroy = new ReplaySubject<void>();
   private readonly mapContents = new ReplaySubject<ElementRef>(1);
   private readonly mapMarkers = new ReplaySubject<MapMarker[]>(1);
+  private readonly optionsObs = new ReplaySubject<MapOptions>(1);
   private readonly latObs = new ReplaySubject<number>(1);
   private readonly lngObs = new ReplaySubject<number>(1);
-  private readonly zoomObs = new ReplaySubject<number>(1);
+  private readonly zoomObs = new ReplaySubject<MapOptions>(1);
   private readonly mapObs = combineLatest(
     this.mapApiService.getApi(),
     this.mapContents).pipe(
-      map(([api, elem]) => new api.Map(elem.nativeElement, {zoom: DEFAULT_ZOOM, center: DEFAULT_CENTER})),
+      map(([api, elem]) => new api.Map(elem.nativeElement)),
       publishReplay(1),
       refCount(),
     );
@@ -84,8 +97,8 @@ export class MatMap implements OnDestroy {
     this.mapMarkers.next(markers.toArray());
   }
 
-  @Input() set zoom(n: number) {
-    this.zoomObs.next(n);
+  @Input() set zoom(zoom: number) {
+    this.zoomObs.next(({zoom}) as MapOptions);
   }
 
   ngOnDestroy() {

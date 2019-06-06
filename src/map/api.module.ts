@@ -8,7 +8,7 @@
 
 import {NgModule} from '@angular/core';
 import { HttpClientModule, HttpClientJsonpModule } from '@angular/common/http';
-import { MapApiService } from './map-api.service';
+import { MapApiService } from './api.service';
 
 @NgModule({
   imports: [ HttpClientModule, HttpClientJsonpModule],

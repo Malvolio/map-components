@@ -10,8 +10,8 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCommonModule } from '@angular/material/core';
 import { MatMap } from './map.component';
-import { MapMarker } from './map-marker.component';
-import { MapApiModule } from './map-api.module';
+import { MapMarker } from './marker.component';
+import { MapApiModule } from './api.module';
 
 @NgModule({
   imports: [ CommonModule, MatCommonModule, MapApiModule ],

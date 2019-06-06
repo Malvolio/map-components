@@ -1,4 +1,7 @@
-<matMap [zoom]="zoom | async"  [lat]="center.lat" [lng]="center.lng">
+<matMap
+  [zoom]="zoom | async"
+  [lat]="center.lat" [lng]="center.lng"
+  [options]="mapOptions | async">
   <matMapMarker *ngFor="let location of locations" [lat]="location.lat" [lng]="location.lng"></matMapMarker>
 </matMap>
 

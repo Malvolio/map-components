@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, ReplaySubject } from 'rxjs';
 import { publishReplay, refCount, map } from 'rxjs/operators';
 
-import { MapApi } from './map-api.interface';
+import { GoogMapApi, ControlPosition } from './api.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -16,12 +16,12 @@ export class MapApiService {
                     this.cred.mapApiKey,
                     "callback")
     .pipe(
-      map(() => window['google'].maps as MapApi),
+      map(() => window['google'].maps as GoogMapApi),
       publishReplay(),
       refCount(),
     );
   
-  getApi(): Observable<MapApi> {
+  getApi(): Observable<GoogMapApi> {
     return this.ready;
   }
 

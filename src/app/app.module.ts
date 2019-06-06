@@ -6,8 +6,14 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatMenuModule } from '@angular/material';
 import { MatButtonModule } from '@angular/material';
 
-import { MatMapModule } from '../map';
+import { MatMapModule, MapOptions } from '../map';
 import { MatMapCredentials } from '../map';
+
+/**
+ * not checked in.  Should be of the form:
+ * export const mapApiKey = 'AIzablahblahblahblahblahblah';
+ */
+import { mapApiKey } from './map-api.key';  
 
 
 @NgModule({
@@ -26,7 +32,7 @@ import { MatMapCredentials } from '../map';
     {
       provide: MatMapCredentials,
       useValue: {
-        mapApiKey: 'AIzaSyATPX1NvLfpQj-l8bSTnYdcknLAPjw0xPI',
+        mapApiKey,
       }
     },
   ],

@@ -1,10 +1,10 @@
 import { Component, Input, OnDestroy } from '@angular/core';
 
-import { Observable, combineLatest, ReplaySubject } from 'rxjs';
+import { Observable, combineLatest, ReplaySubject, merge } from 'rxjs';
 import { map, takeUntil, publishReplay, refCount, debounceTime } from 'rxjs/operators';
 
-import { MapApiService } from './map-api.service';
-import { GoogMap, GoogMarker } from './map-api.interface';
+import { MapApiService } from './api.service';
+import { GoogMap, GoogMarker, MarkerOptions } from './api.interface';
 import { teardown } from './teardown';
 
 @Component({
@@ -14,6 +14,15 @@ import { teardown } from './teardown';
   ],
 })
 export class MapMarker implements OnDestroy {
+  /**
+   * All marker options
+   */
+  @Input() set options(options: MarkerOptions) {
+    if (options) {
+      this.optionsObs.next(options);
+    }
+  }
+
   /**
    * The latitude for this marker, expressed as a number.
    */
@@ -38,11 +47,16 @@ export class MapMarker implements OnDestroy {
   constructor(private readonly mapApiService: MapApiService) {
     const positionObs = combineLatest(this.latObs, this.lngObs).pipe(
       debounceTime(10), // in case of any Angular weirdness
-      map(([lat, lng]) => ({lat, lng})),
+      map(([lat, lng]) => ({position: {lat, lng}}) as MarkerOptions),
     );
 
-    this.withMarker(positionObs, (marker, position) => {
-      marker.setPosition(position);
+    this.withMarker(
+      merge(
+        positionObs,
+        this.optionsObs,
+      ),
+      (marker, options) => {
+      marker.setOptions(options);
     });
   }
 
@@ -54,6 +68,7 @@ export class MapMarker implements OnDestroy {
   private readonly onDestroy = new ReplaySubject<void>();
   private readonly latObs = new ReplaySubject<number>(1);
   private readonly lngObs = new ReplaySubject<number>(1);
+  private readonly optionsObs = new ReplaySubject<MarkerOptions>(1);
   private readonly googMapObs = new ReplaySubject<GoogMap>(1);
 
   private readonly googMarkerObs = combineLatest(
