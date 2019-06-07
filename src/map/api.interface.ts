@@ -17,6 +17,12 @@ export interface LatLngLiteral {
   lng: number;
 }
 
+export class LatLng {
+  private constructor() {}
+  lat(): number { return 0; };
+  lng(): number { return 0; };
+}
+
 /**
  * This is a little nominal-typing trick.  It guarantees that the only
  * way, short of deliberate casting, to get constants of this type
@@ -251,6 +257,10 @@ export interface GoogMap {
   setZoom(zoom: number): void;
 }
 
+interface MapsEventListener {
+  remove(): void;
+}
+
 export interface GoogMapApi {
   Map: {
     new (nativeElement: any, options?: MapOptions): GoogMap
@@ -275,7 +285,7 @@ export interface GoogMapApi {
     new(
       lat:  number,
       lng:  number,
-    ): LatLngLiteral;
+    ): LatLng;
   };
   ControlPosition: ControlPositionValues;
   MapTypeControlStyle: MapTypeControlStyleValues;
@@ -283,4 +293,10 @@ export interface GoogMapApi {
   ScaleControlStyle: ScaleControlStyleValues;
   Animation: AnimationValues;
   SymbolPath: SymbolPathValues;
+
+  event: {
+    addListener(instance:  GoogMap,
+              eventName:  string,
+                handler: Function) :  MapsEventListener;
+  }
 }

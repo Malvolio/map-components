@@ -1,4 +1,5 @@
 <matMap
+  (locationClick)="onClick($event)"
   [zoom]="zoom | async"
   [lat]="center.lat" [lng]="center.lng"
   [options]="mapOptions | async">
@@ -21,3 +22,8 @@
   Zoom: {{zoom | async}}
 </button>
 
+<ul *ngIf="latLngObs | async as latLngs">
+  <li *ngFor="let latLng of latLngs">
+  {{latLng.lat}}   {{latLng.lng}}
+  </li>
+</ul>

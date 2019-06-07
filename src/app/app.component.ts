@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
 
-import { BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { BehaviorSubject, ReplaySubject } from 'rxjs';
+import { map, scan } from 'rxjs/operators';
 
 import { MapApiService } from '../map';
-import { MapOptions } from '../map';
+import { MapOptions, LatLngLiteral } from '../map';
 
 
 @Component({
@@ -14,6 +14,11 @@ import { MapOptions } from '../map';
 })
 export class AppComponent {
   private readonly zoom = new BehaviorSubject(3);
+  private readonly clicks = new ReplaySubject<LatLngLiteral>(1);
+  private readonly latLngObs = this.clicks.pipe(
+    scan((acc, latLng) => [...acc, latLng], [] as LatLngLiteral[]),
+  );
+
   readonly locations = [
     {lat: -25, lng: 131},
     {lat: -24, lng: 133},
@@ -26,5 +31,9 @@ export class AppComponent {
 
   readonly mapOptions = this.mapApiService.getApi().pipe(
     map(api => ({ mapTypeId: api.MapTypeId.SATELLITE } as MapOptions)),
-  );    
+  );
+
+  onClick(latLng: LatLngLiteral): void {
+    this.clicks.next(latLng);
+  }
 }
